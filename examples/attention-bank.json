@@ -1,0 +1,16 @@
+{
+  "bank": "example.attention",
+  "version": "0.1.0",
+  "questions": {
+    "addressed": {
+      "type": "noul",
+      "instructions": "Is the latest utterance addressed to the robot?",
+      "criteria": "True for a direct request to Reachy; false for talk between people."
+    },
+    "target": {
+      "type": "choice",
+      "instructions": "Which visible person should the robot attend to?",
+      "options": ["$people.ids", "none"]
+    }
+  }
+}

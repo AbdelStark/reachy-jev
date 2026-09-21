@@ -125,6 +125,27 @@ def test_question_bank_expansion_and_wire_shape():
         expand_bank(bank, ["bad"])
 
 
+@pytest.mark.parametrize(
+    "question",
+    [
+        {"type": "bool", "instructions": "Is someone here?"},
+        {"type": "noul", "instructions": "Is someone here?", "criteria": " "},
+        {"type": "noul", "instructions": "Is someone here?", "criterai": "True if present"},
+        {"type": "choice", "instructions": "Who?", "options": ["none", " "]},
+        {"type": "choice", "instructions": "Who?", "options": ["none"], "levels": ["low", "high"]},
+        {"type": "score", "instructions": "How much?", "levels": ["low", "low"]},
+        {"type": "score", "instructions": "How much?", "levels": ["low", 2]},
+        None,
+    ],
+)
+def test_malformed_question_fails_before_wire_request(question):
+    bank = {"bank": "reflex.core", "version": "0.1.0", "questions": {"signal": question}}
+    with pytest.raises(ValueError):
+        expand_bank(bank, ["p1"])
+    with pytest.raises(ValueError):
+        to_typesafe_questions(bank, ["p1"])
+
+
 def test_policy_and_motion_are_deterministic_and_bounded():
     assert [decide(p, no=0.3, yes=0.7) for p in (0.29, 0.3, 0.7, 0.71)] == [
         "no",

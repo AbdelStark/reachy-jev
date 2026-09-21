@@ -11,14 +11,24 @@ _BANK = re.compile(r"[a-z][a-z0-9_.-]*\Z")
 _VERSION = re.compile(r"\d+\.\d+\.\d+\Z")
 
 
+def _nonempty(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
 def expand_bank(bank: dict[str, Any], person_ids: list[str]) -> dict[str, dict[str, Any]]:
-    if not isinstance(bank.get("bank"), str) or not _BANK.fullmatch(bank["bank"]):
+    if (
+        not isinstance(bank, dict)
+        or not isinstance(bank.get("bank"), str)
+        or not _BANK.fullmatch(bank["bank"])
+    ):
         raise ValueError("invalid bank name")
     if not isinstance(bank.get("version"), str) or not _VERSION.fullmatch(bank["version"]):
         raise ValueError("invalid bank version")
     questions = bank.get("questions")
     if not isinstance(questions, dict) or not questions:
         raise ValueError("empty question bank")
+    if not isinstance(person_ids, list):
+        raise ValueError("invalid person IDs")
     ids = list(dict.fromkeys(person_ids))
     if any(not isinstance(person_id, str) or not _PERSON.fullmatch(person_id) for person_id in ids):
         raise ValueError("invalid person ID")
@@ -27,19 +37,19 @@ def expand_bank(bank: dict[str, Any], person_ids: list[str]) -> dict[str, dict[s
         if not isinstance(key, str) or not _KEY.fullmatch(key) or not isinstance(question, dict):
             raise ValueError("invalid question")
         instructions = question.get("instructions")
-        if not isinstance(instructions, str) or not instructions.strip():
+        if not _nonempty(instructions):
             raise ValueError("invalid question instructions")
         kind = question.get("type")
         if kind == "choice":
             source = question.get("options")
-            if not isinstance(source, list):
+            if set(question) - {"type", "instructions", "options"} or not isinstance(source, list):
                 raise ValueError("invalid choice options")
             options = [
                 person_id for option in source for person_id in (ids if option == "$people.ids" else [option])
             ]
             if (
                 not options
-                or any(not isinstance(option, str) or not option for option in options)
+                or any(not _nonempty(option) for option in options)
                 or len(set(options)) != len(options)
             ):
                 raise ValueError(f"invalid choice options: {key}")
@@ -47,14 +57,19 @@ def expand_bank(bank: dict[str, Any], person_ids: list[str]) -> dict[str, dict[s
         elif kind == "score":
             levels = question.get("levels")
             if (
-                not isinstance(levels, list)
+                set(question) - {"type", "instructions", "levels"}
+                or not isinstance(levels, list)
                 or len(levels) < 2
-                or any(not isinstance(level, str) or not level for level in levels)
+                or any(not _nonempty(level) for level in levels)
                 or len(set(levels)) != len(levels)
             ):
                 raise ValueError(f"invalid score levels: {key}")
             expanded[key] = dict(question)
         elif kind == "noul":
+            if set(question) - {"type", "instructions", "criteria"} or (
+                "criteria" in question and not _nonempty(question["criteria"])
+            ):
+                raise ValueError(f"invalid noul criteria: {key}")
             expanded[key] = dict(question)
         else:
             raise ValueError(f"unknown question type: {key}")

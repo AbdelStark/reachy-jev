@@ -52,6 +52,24 @@ test("question expansion accepts only session-local person IDs", () => {
   assert.throws(() => expandBank(bank, ["Alice"]), TypeError);
 });
 
+test("malformed question banks fail before a wire request is built", () => {
+  const question = (value) => ({ bank: "reflex.core", version: "0.1.0", questions: { signal: value } });
+  for (const invalid of [
+    question({ type: "bool", instructions: "Is someone here?" }),
+    question({ type: "noul", instructions: "Is someone here?", criteria: " " }),
+    question({ type: "noul", instructions: "Is someone here?", criterai: "True if present" }),
+    question({ type: "choice", instructions: "Who?", options: ["none", " "] }),
+    question({ type: "choice", instructions: "Who?", options: ["none"], levels: ["low", "high"] }),
+    question({ type: "score", instructions: "How much?", levels: ["low", "low"] }),
+    question({ type: "score", instructions: "How much?", levels: ["low", 2] }),
+    question(null),
+    { bank: "reflex.core", version: "0.1.0", questions: [] },
+  ]) {
+    assert.throws(() => expandBank(invalid, ["p1"]), TypeError);
+    assert.throws(() => toTypeSafeQuestions(invalid, ["p1"]), TypeError);
+  }
+});
+
 test("client caches identical requests and marks stale fallback after retry", async () => {
   let now = 1000;
   let calls = 0;

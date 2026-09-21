@@ -9,6 +9,8 @@
   },
   "files": [
     "dist",
+    "bin",
+    "docs",
     "examples",
     "README.md",
     "LICENSE",
@@ -19,6 +21,7 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": { "reachy-jev": "./bin/reachy-jev.mjs" },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -37,6 +40,7 @@
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
     "check": "tsc -p tsconfig.json --noEmit",
+    "lint:example": "npm run build && node bin/reachy-jev.mjs questions lint examples/attention-bank.json --people p1,p2",
     "example": "npm run build && node examples/room-decision.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
     "test:browser": "npm run build && playwright test"
