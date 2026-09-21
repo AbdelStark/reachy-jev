@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { bearing, distance, elapsed, buildRoomState, decide, Hysteresis, Refractory, composite, gate, attend, suspicion, expandBank, JevClient, traceLine } from "../dist/index.js";
+import { bearing, distance, elapsed, buildRoomState, decide, Hysteresis, Refractory, composite, gate, attend, suspicion, expandBank, toTypeSafeQuestions, JevClient, traceLine } from "../dist/index.js";
 
 test("state bucketing has defined boundaries and omits unknown observations", () => {
   assert.equal(bearing(-60), "left");
@@ -45,6 +45,7 @@ test("motion is bounded abstract data, never hardware actuation", () => {
 test("question expansion accepts only session-local person IDs", () => {
   const bank = { bank: "reflex.core", version: "0.1.0", questions: { attention_target: { type: "choice", instructions: "Who?", options: ["$people.ids", "none"] } } };
   assert.deepEqual(expandBank(bank, ["p1", "p2"]).attention_target.options, ["p1", "p2", "none"]);
+  assert.deepEqual(toTypeSafeQuestions(bank, ["p1"]).attention_target.criteria, { p1: null, none: null });
   assert.throws(() => expandBank(bank, ["Alice"]), TypeError);
 });
 

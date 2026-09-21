@@ -7,7 +7,7 @@ This is an in-development TypeScript core. The Python distribution, browser pane
 ## Example
 
 ```ts
-import { buildRoomState, JevClient, decide, suspicion } from "reachy-jev";
+import { buildRoomState, JevClient, decide, suspicion, toTypeSafeQuestions } from "reachy-jev";
 
 const state = buildRoomState({
   people: [{ id: "p1", bearingDeg: -18, faceHeightFraction: 0.24 }],
@@ -16,6 +16,7 @@ const state = buildRoomState({
 const client = new JevClient({
   ask: (state, questions) => typesafeClient.systemOne({ state, questions }),
 });
+const questions = toTypeSafeQuestions(bank, ["p1"]);
 const result = await client.ask(state, questions);
 const band = decide(result.answers.addressed.noul, { no: 0.3, yes: 0.7 });
 const pose = suspicion(0.75); // application translates target to SDK commands

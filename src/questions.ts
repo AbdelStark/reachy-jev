@@ -17,7 +17,24 @@ export function expandBank(bank: QuestionBank, personIds: readonly string[]): Re
       if (!options.length || new Set(options).size !== options.length) throw new TypeError(`invalid choice options: ${key}`);
       return [key, { ...question, options }];
     }
-    if (question.type === "score" && (!question.levels.length || new Set(question.levels).size !== question.levels.length)) throw new TypeError(`invalid score levels: ${key}`);
+    if (question.type === "score" && (question.levels.length < 2 || new Set(question.levels).size !== question.levels.length)) throw new TypeError(`invalid score levels: ${key}`);
     return [key, question];
+  }));
+}
+
+/** Convert the human-readable bank into the TypeSafe JS SDK's actual request shape. */
+export function toTypeSafeQuestions(bank: QuestionBank, personIds: readonly string[]) {
+  const expanded = expandBank(bank, personIds);
+  return Object.fromEntries(Object.entries(expanded).map(([key, question]) => {
+    const instructions = question.type === "noul" && question.criteria
+      ? `${question.instructions} Criteria: ${question.criteria}`
+      : question.instructions;
+    if (question.type === "choice") {
+      return [key, { type: "choice", instructions, criteria: Object.fromEntries(question.options.map((option) => [option, null])) }];
+    }
+    if (question.type === "score") {
+      return [key, { type: "score", instructions, criteria: [...question.levels] }];
+    }
+    return [key, { type: "noul", instructions }];
   }));
 }
