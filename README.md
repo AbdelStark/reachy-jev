@@ -2,28 +2,38 @@
 
 Typed decision primitives for Reachy Mini apps. Perception stays with the app; this library turns observations into compact Jev state, applies deterministic policy, and returns abstract motion targets. It never drives motors or treats a model answer as a safety interlock.
 
-This is an in-development TypeScript core. The Python distribution, browser panel, and hardware integrations are not yet released. No latency, accuracy, or hardware compatibility is claimed yet.
+This is an in-development TypeScript package with a browser signal panel and an optional React wrapper. The Python distribution and hardware integrations are not yet released. No latency, accuracy, or hardware compatibility is claimed yet.
 
 ## Example
 
-```ts
-import { buildRoomState, JevClient, decide, suspicion, toTypeSafeQuestions } from "reachy-jev";
-
-const state = buildRoomState({
-  people: [{ id: "p1", bearingDeg: -18, faceHeightFraction: 0.24 }],
-  transcriptRecent: [{ who: "p1", text: "Reachy, are you listening?" }],
-});
-const client = new JevClient({
-  ask: (state, questions) => typesafeClient.systemOne({ state, questions }),
-});
-const questions = toTypeSafeQuestions(bank, ["p1"]);
-const result = await client.ask(state, questions);
-const band = decide(result.answers.addressed.noul, { no: 0.3, yes: 0.7 });
-const pose = suspicion(0.75); // application translates target to SDK commands
-```
+Run the [complete fixture example](examples/room-decision.mjs) with `npm run example`. It builds a bucketed room state, expands a versioned question bank, obtains a fake typed answer, gates that answer in code, and returns an abstract pose. It needs no API key or robot. Replace only the `ask` adapter with your authenticated TypeSafe SDK or relay call; never place an API key in browser JavaScript.
 
 `JevClient` caches identical state briefly, retries one transient failure, and marks fallback answers stale. Apps must not actuate from stale answers. State omits unknown fields, caps transcript text, and keeps it in a data field.
 
-Run `npm ci`, `npm run check`, and `npm test` on Node.js 20+. Tests use a fake adapter and need no credentials or robot.
+## Browser panel
+
+`reachy-jev/panel` registers two custom elements and is intentionally separate from the Node-safe root import. It has no React or CSS-framework dependency.
+
+```ts
+import "reachy-jev/panel";
+import type { JevPanelElement } from "reachy-jev/panel";
+
+const panel = document.createElement("jev-panel") as JevPanelElement;
+document.body.append(panel);
+panel.update({
+  model: "jev-latest",
+  latencyMs: 118,
+  gauges: [
+    { key: "addressed", label: "Addressed", p: 0.82, type: "noul" },
+    { key: "attention", label: "Attention", p: 0.45, confidence: 0.4, type: "choice" },
+  ],
+});
+```
+
+The panel accepts already-validated probabilities, not raw SDK response objects. Callers decide how to map a Choice or Score to a 0–1 display value. A stale frame is visibly marked; `confidence < 0.5` hatches the corresponding gauge. Labels are inserted as text, never HTML. The panel is visual feedback, not an authority for motion or safety decisions.
+
+React apps can import `JevPanel` from `reachy-jev/react` and pass the same `frame` object. React is an optional peer dependency; the wrapper renders on the server without accessing browser globals, then registers the custom element and updates it on the client.
+
+Run `npm ci`, `npm run check`, and `npm test` on Node.js 20+. For browser checks, run `npx playwright install chromium` and `npm run test:browser`. Tests use fake answers and need no credentials or robot.
 
 MIT licensed. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
