@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use reachy-jev in research or an application, cite this software repository."
+title: "reachy-jev: Typed decision primitives for Reachy Mini apps"
+type: software
+authors:
+  - name: "AbdelStark"
+repository-code: "https://github.com/AbdelStark/reachy-jev"
+license: MIT
+version: 0.0.1

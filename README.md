@@ -2,7 +2,17 @@
 
 Typed decision primitives for Reachy Mini apps. Perception stays with the app; this library turns observations into compact Jev state, applies deterministic policy, and returns abstract motion targets. It never drives motors or treats a model answer as a safety interlock.
 
-This is an in-development TypeScript package with a browser signal panel and an optional React wrapper. A [Python core](python/README.md) lives alongside it; neither distribution nor hardware integrations have been publicly released. No latency, accuracy, or hardware compatibility is claimed yet.
+The source is public as a development preview, with a browser signal panel, an optional React wrapper, and a [Python core](python/README.md). The packages are installable from the pinned Git tag below; neither has been published to npm or PyPI. No live Jev, latency, accuracy, or hardware compatibility result is claimed.
+
+## Install
+
+Node.js 20+ is required. Install the versioned source tag; npm runs this package's TypeScript `prepare` build during a Git install:
+
+```sh
+npm install 'github:AbdelStark/reachy-jev#v0.0.1'
+```
+
+The lockfile records the resolved commit. For stronger supply-chain pinning, use the exact commit SHA and review the package's `prepare` script. React is an optional peer dependency and is needed only for `reachy-jev/react`.
 
 ## Example
 
@@ -38,4 +48,4 @@ Run `npm ci`, `npm run check`, and `npm test` on Node.js 20+. For browser checks
 
 The Python core supports 3.10+ without runtime dependencies and mirrors the state, question, policy, motion, client, and trace primitives. From `python/`, run `uv sync --dev`, `uv run ruff check src tests examples`, `uv run pytest`, and `uv build`. The built wheel is checked in an isolated consumer; the Python package has not been published to PyPI.
 
-MIT licensed. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+MIT licensed. See [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md).

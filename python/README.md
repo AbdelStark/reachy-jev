@@ -2,11 +2,17 @@
 
 Dependency-light decision primitives for Reachy Mini applications. This package converts numeric perception into small Jev-ready text state, expands versioned question banks, applies deterministic policy, and returns abstract pose targets. It does **not** call a model or move a robot by itself.
 
-The TypeScript package and browser panel live in the same [repository](https://github.com/AbdelStark/reachy-jev). This Python distribution is at 0.0.1 and has not been tested on a physical Reachy Mini or against live Jev. Do not use it as a safety controller.
+The TypeScript package and browser panel live in the same [public repository](https://github.com/AbdelStark/reachy-jev). This Python distribution is at 0.0.1 and has not been tested on a physical Reachy Mini or against live Jev. Do not use it as a safety controller.
 
 ## Install
 
-The core has no runtime dependencies: `pip install reachy-jev`. The optional `jev` extra brings the TypeSafe SDK. Install the Reachy SDK separately in a Python 3.11+ host app; its current Python requirement is stricter than this core's 3.10+ support. Application code owns credentials, network calls, motor limits, and hardware actuation. Until a PyPI release, install the built wheel from this checkout; the command above is the intended published-package form, not a claim that it is live on PyPI.
+The core has no runtime dependencies and supports Python 3.10+. Until a PyPI release, install the Python subproject from the versioned source tag:
+
+```sh
+pip install 'reachy-jev @ git+https://github.com/AbdelStark/reachy-jev.git@v0.0.1#subdirectory=python'
+```
+
+The optional `jev` extra brings the TypeSafe SDK. Install the Reachy SDK separately in a Python 3.11+ host app; its current Python requirement is stricter than this core's 3.10+ support. Application code owns credentials, network calls, motor limits, and hardware actuation. `pip install reachy-jev` is not yet supported because this package is not on PyPI.
 
 ## Small example
 
@@ -24,4 +30,4 @@ target = attend(-18) if band == "yes" else attend(0)
 
 Run the complete [offline example](examples/room_decision.py) with `uv run python examples/room_decision.py`. Its fake answer is a fixture, not a Jev result or robot command.
 
-Development: `uv sync --dev`, `uv run ruff check src tests examples`, `uv run ruff format --check src tests examples`, `uv run pytest`, `uv build` from this directory. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+Development: `uv sync --dev`, `uv run ruff check src tests examples`, `uv run ruff format --check src tests examples`, `uv run pytest`, `uv build` from this directory. See [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md).
