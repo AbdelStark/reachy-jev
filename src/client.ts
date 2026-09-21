@@ -1,4 +1,4 @@
-export interface JevAnswer { noul?: number; choice?: string; score?: string | number; confidence?: number; probabilities?: Record<string, number> }
+export interface JevAnswer { type?: "noul" | "choice" | "score"; noul?: number; choice?: string; score?: number; confidence?: number; probabilities?: Record<string, number> }
 export interface JevResponse { answers: Record<string, JevAnswer>; model?: string; usage?: { input_tokens?: number; output_tokens?: number } }
 export interface JevResult extends JevResponse { stale: boolean; skipped: boolean; latencyMs: number }
 export interface JevClientOptions {
