@@ -71,8 +71,10 @@ test("client caches identical requests and marks stale fallback after retry", as
   assert.equal(calls, 3);
 });
 
-test("trace export removes transcript and action text unless opted in", () => {
-  const record = { t: 1, app: "reflex", bank: "test@0.1.0", state: { transcript_recent: [{ text: "private" }] }, answers: {}, action: { text: "private" }, latency_ms: 10, skipped: false, stale: false };
-  assert.equal(traceLine(record).includes("private"), false);
-  assert.equal(traceLine(record, { keepText: true }).includes("private"), true);
+test("trace export is payload-free by default, including unknown text fields", () => {
+  const record = { t: 1, app: "reflex", bank: "test@0.1.0", model: "private model label", state: { transcript_recent: [{ text: "private" }], tool_arguments_json: "secret" }, answers: { explanation: "private" }, action: { unexpected: "secret" }, latency_ms: 10, skipped: false, stale: false };
+  assert.deepEqual(JSON.parse(traceLine(record)), { schema: "reachy_jev.trace_meta@1", t: 1, latency_ms: 10, skipped: false, stale: false });
+  assert.deepEqual(JSON.parse(traceLine(record, { keepText: true })), record);
+  assert.throws(() => traceLine(record, { keepText: "true" }), TypeError);
+  assert.throws(() => traceLine({ ...record, latency_ms: Number.NaN }), TypeError);
 });

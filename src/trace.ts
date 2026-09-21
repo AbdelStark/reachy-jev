@@ -10,14 +10,13 @@ export interface TraceRecord {
   skipped: boolean;
   stale: boolean;
 }
-function stripText(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(stripText);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).filter(([key]) => !["text", "untrusted_text", "transcript_recent", "statement", "statements", "args_summary", "user_request"].includes(key)).map(([key, item]) => [key, stripText(item)]));
-  }
-  return value;
-}
-/** Explicit opt-in is required to retain transcript/action text in an exported trace. */
+/** Default export is payload-free metadata. Full records require explicit opt-in. */
 export function traceLine(record: TraceRecord, options: { keepText?: boolean } = {}): string {
-  return JSON.stringify(options.keepText ? record : stripText(record)) + "\n";
+  if (options.keepText !== undefined && typeof options.keepText !== "boolean") throw new TypeError("keepText must be a boolean");
+  if (!Number.isFinite(record.t) || record.t < 0 || !Number.isFinite(record.latency_ms) || record.latency_ms < 0
+    || typeof record.skipped !== "boolean" || typeof record.stale !== "boolean") {
+    throw new TypeError("invalid trace metadata");
+  }
+  if (options.keepText === true) return JSON.stringify(record) + "\n";
+  return JSON.stringify({ schema: "reachy_jev.trace_meta@1", t: record.t, latency_ms: record.latency_ms, skipped: record.skipped, stale: record.stale }) + "\n";
 }

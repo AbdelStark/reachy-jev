@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Reject duplicate room person IDs.
+- Export only payload-free timing/stale metadata by default; full trace records require explicit `keep_text=True`. This changes the development-preview trace output shape.
+
 ## 0.0.1 (development)
 
 - Add dependency-light typed state, question, client, policy, abstract motion, and trace primitives.

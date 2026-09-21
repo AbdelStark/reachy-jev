@@ -155,14 +155,32 @@ def test_hysteresis_and_refractory():
     assert refractory.fire(3000)
 
 
-def test_trace_strips_sensitive_text_by_default():
+def test_trace_export_is_payload_free_by_default():
     record = {
-        "state": {"transcript_recent": [{"text": "private"}], "people": []},
-        "action": {"statement": "secret", "kind": "speak"},
+        "t": 1,
+        "app": "reflex",
+        "bank": "test@0.1.0",
+        "model": "private model label",
+        "state": {"transcript_recent": [{"text": "private"}], "tool_arguments_json": "secret"},
+        "answers": {"explanation": "private"},
+        "action": {"unexpected": "secret"},
+        "latency_ms": 10,
+        "skipped": False,
+        "stale": False,
     }
     clean = json.loads(trace_line(record))
-    assert clean == {"state": {"people": []}, "action": {"kind": "speak"}}
+    assert clean == {
+        "schema": "reachy_jev.trace_meta@1",
+        "t": 1,
+        "latency_ms": 10,
+        "skipped": False,
+        "stale": False,
+    }
     assert json.loads(trace_line(record, keep_text=True)) == record
+    with pytest.raises(ValueError):
+        trace_line(record, keep_text="true")
+    with pytest.raises(ValueError):
+        trace_line({**record, "latency_ms": float("nan")})
 
 
 def test_client_cache_retry_and_stale_fallback():

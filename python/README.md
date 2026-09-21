@@ -26,7 +26,7 @@ target = attend(-18) if band == "yes" else attend(0)
 # Translate target to Reachy SDK calls in the host, after independent limits.
 ```
 
-`JevClient` accepts an async `ask(state, questions)` adapter; it caches identical requests for at most one second and retries one transient failure. If it returns `stale=True`, do not actuate from that answer. `to_typesafe_questions()` emits the TypeSafe SDK's request shape; the bank's fixed instructions are never populated from transcript text. `trace_line()` strips transcript and action text by default. All functions are unit-tested without keys or hardware.
+`JevClient` accepts an async `ask(state, questions)` adapter; it caches identical requests for at most one second and retries one transient failure. If it returns `stale=True`, do not actuate from that answer. `to_typesafe_questions()` emits the TypeSafe SDK's request shape; the bank's fixed instructions are never populated from transcript text. `trace_line()` exports only timing and stale/skip metadata by default (`reachy_jev.trace_meta@1`); it omits app/model labels, state, answers, and action. `keep_text=True` exports the **whole record** and requires consent and caller-owned privacy review. Even timestamps can be sensitive; metadata-only is not anonymization. All functions are unit-tested without keys or hardware.
 
 Run the complete [offline example](examples/room_decision.py) with `uv run python examples/room_decision.py`. Its fake answer is a fixture, not a Jev result or robot command.
 
