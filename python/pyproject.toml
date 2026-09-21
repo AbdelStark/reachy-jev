@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "reachy-jev"
+version = "0.0.1"
+description = "Typed decision primitives for Reachy Mini apps"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Abdelhamid" }]
+keywords = ["reachy-mini", "robotics", "jev", "typed-decisions"]
+classifiers = ["Programming Language :: Python :: 3", "Programming Language :: Python :: 3.10", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12", "Programming Language :: Python :: 3.13", "Topic :: Scientific/Engineering :: Artificial Intelligence"]
+dependencies = []
+
+[project.optional-dependencies]
+jev = ["typesafe-sdk>=0.7.0"]
+
+[project.urls]
+Repository = "https://github.com/AbdelStark/reachy-jev"
+Issues = "https://github.com/AbdelStark/reachy-jev/issues"
+
+[dependency-groups]
+dev = ["pytest>=8.3", "ruff>=0.13", "build>=1.2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/reachy_jev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

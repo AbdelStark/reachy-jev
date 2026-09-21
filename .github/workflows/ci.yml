@@ -41,3 +41,31 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser
+
+  python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install uv==0.9.18
+      - run: uv sync --locked --dev
+      - run: uv run ruff check src tests examples
+      - run: uv run ruff format --check src tests examples
+      - run: uv run pytest
+      - run: uv run python examples/room_decision.py
+      - run: uv build --out-dir dist --clear --no-build-logs
+      - run: |
+          python -m venv "$RUNNER_TEMP/reachy-jev-consumer"
+          uv pip install --python "$RUNNER_TEMP/reachy-jev-consumer/bin/python" dist/reachy_jev-0.0.1-py3-none-any.whl
+          "$RUNNER_TEMP/reachy-jev-consumer/bin/python" -c 'from reachy_jev import attend, build_room_state; assert attend(90)["yawDeg"] == 45; assert build_room_state({"people": [{"id": "p1", "bearingDeg": -18}]})["people"][0]["bearing"] == "slightly left"'

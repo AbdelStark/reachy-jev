@@ -2,7 +2,7 @@
 
 Typed decision primitives for Reachy Mini apps. Perception stays with the app; this library turns observations into compact Jev state, applies deterministic policy, and returns abstract motion targets. It never drives motors or treats a model answer as a safety interlock.
 
-This is an in-development TypeScript package with a browser signal panel and an optional React wrapper. The Python distribution and hardware integrations are not yet released. No latency, accuracy, or hardware compatibility is claimed yet.
+This is an in-development TypeScript package with a browser signal panel and an optional React wrapper. A [Python core](python/README.md) lives alongside it; neither distribution nor hardware integrations have been publicly released. No latency, accuracy, or hardware compatibility is claimed yet.
 
 ## Example
 
@@ -35,5 +35,7 @@ The panel accepts already-validated probabilities, not raw SDK response objects.
 React apps can import `JevPanel` from `reachy-jev/react` and pass the same `frame` object. React is an optional peer dependency; the wrapper renders on the server without accessing browser globals, then registers the custom element and updates it on the client.
 
 Run `npm ci`, `npm run check`, and `npm test` on Node.js 20+. For browser checks, run `npx playwright install chromium` and `npm run test:browser`. Tests use fake answers and need no credentials or robot.
+
+The Python core supports 3.10+ without runtime dependencies and mirrors the state, question, policy, motion, client, and trace primitives. From `python/`, run `uv sync --dev`, `uv run ruff check src tests examples`, `uv run pytest`, and `uv build`. The built wheel is checked in an isolated consumer; the Python package has not been published to PyPI.
 
 MIT licensed. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).

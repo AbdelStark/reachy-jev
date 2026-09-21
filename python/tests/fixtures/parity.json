@@ -1,0 +1,35 @@
+{
+  "observation": {
+    "people": [
+      {"id": "p1", "bearingDeg": -18, "faceHeightFraction": 0.24, "faceYawDeg": 19, "lookingAtRobot": true},
+      {"id": "p2", "bearingDeg": null}
+    ],
+    "sound": {"levelDbfs": -20, "voiceDetected": true},
+    "transcriptRecent": [{"who": "p1", "text": "Reachy?", "endedSecondsAgo": 1}],
+    "robot": {"currentlySpeaking": false}
+  },
+  "state": {
+    "schema": "room_state@1",
+    "people": [
+      {"id": "p1", "bearing": "slightly left", "distance": "near", "facing_robot": true, "looking_at_robot": true},
+      {"id": "p2"}
+    ],
+    "sound": {"level": "conversational", "voice_detected": true},
+    "transcript_recent": [{"who": "p1", "text": "Reachy?", "ended": "just now"}],
+    "robot": {"currently_speaking": false}
+  },
+  "bank": {
+    "bank": "reflex.core",
+    "version": "0.1.0",
+    "questions": {
+      "addressed": {"type": "noul", "instructions": "Addressed?", "criteria": "True for a direct address"},
+      "target": {"type": "choice", "instructions": "Choose a person", "options": ["$people.ids", "none"]}
+    }
+  },
+  "questions": {
+    "addressed": {"type": "noul", "instructions": "Addressed? Criteria: True for a direct address"},
+    "target": {"type": "choice", "instructions": "Choose a person", "criteria": {"p1": null, "p2": null, "none": null}}
+  },
+  "attend": {"yawDeg": -18, "pitchDeg": -5, "rollDeg": 0, "zMm": 3, "rightAntennaDeg": 0, "leftAntennaDeg": 0},
+  "suspicion": {"yawDeg": 5, "pitchDeg": 0, "rollDeg": 7.5, "zMm": -4, "rightAntennaDeg": -17.5, "leftAntennaDeg": -17.5}
+}
