@@ -13,7 +13,9 @@
     "README.md",
     "LICENSE",
     "SECURITY.md",
-    "CONTRIBUTING.md"
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "CITATION.cff"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -33,6 +35,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
     "check": "tsc -p tsconfig.json --noEmit",
     "example": "npm run build && node examples/room-decision.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
