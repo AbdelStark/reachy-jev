@@ -46,3 +46,12 @@ test("untrusted labels are text and invalid frames cannot replace the display", 
   expect(result.label).toBe("<img src=x onerror=alert(1)>");
   await expect(page.locator("jev-panel").locator("jev-gauge").locator(".value")).toHaveText("20%");
 });
+
+test("fixture frames are explicitly marked instead of live", async ({ page }) => {
+  await page.evaluate(() => {
+    const panel = document.createElement("jev-panel") as HTMLElement & { update(frame: unknown): void };
+    document.body.append(panel);
+    panel.update({ source: "fixture", gauges: [{ key: "addressed", label: "Addressed", p: 0.8 }] });
+  });
+  await expect(page.locator("jev-panel").locator(".status")).toHaveText("fixture");
+});

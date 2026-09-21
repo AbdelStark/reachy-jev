@@ -30,7 +30,7 @@ panel.update({
 });
 ```
 
-The panel accepts already-validated probabilities, not raw SDK response objects. Callers decide how to map a Choice or Score to a 0–1 display value. A stale frame is visibly marked; `confidence < 0.5` hatches the corresponding gauge. Labels are inserted as text, never HTML. The panel is visual feedback, not an authority for motion or safety decisions.
+The panel accepts already-validated probabilities, not raw SDK response objects. Callers decide how to map a Choice or Score to a 0–1 display value. A stale frame is visibly marked; synthetic previews must set `source: "fixture"` so they are not labeled live. `confidence < 0.5` hatches the corresponding gauge. Labels are inserted as text, never HTML. The panel is visual feedback, not an authority for motion or safety decisions.
 
 React apps can import `JevPanel` from `reachy-jev/react` and pass the same `frame` object. React is an optional peer dependency; the wrapper renders on the server without accessing browser globals, then registers the custom element and updates it on the client.
 

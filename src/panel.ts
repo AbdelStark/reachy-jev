@@ -13,6 +13,7 @@ export interface PanelFrame {
   latencyMs?: number;
   stale?: boolean;
   skipped?: boolean;
+  source?: "live" | "fixture";
 }
 
 const gaugeMarkup = `<style>
@@ -75,6 +76,7 @@ const panelMarkup = `<style>
   h2 { margin:0; font-size:15px; }
   .status { padding:4px 8px; border-radius:999px; background:#24543b; color:#d0ffe0; font-size:11px; font-weight:750; text-transform:uppercase; }
   .status[data-state=stale] { background:#75571b; color:#ffe9ae; }
+  .status[data-state=fixture] { background:#4b3e7b; color:#eee5ff; }
   .status[data-state=idle] { background:#424c5f; color:#e5e9ef; }
   .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:16px 22px; }
   .meta { color:var(--jev-muted,#a8b4ca); margin-top:14px; font-variant-numeric:tabular-nums; }
@@ -129,7 +131,7 @@ export class JevPanelElement extends HTMLElement {
       this.keys = nextKeys;
     }
     this.toggleAttribute("data-has-gauges", elements.length > 0);
-    const state = frame.stale ? "stale" : elements.length ? "live" : "idle";
+    const state = frame.stale ? "stale" : frame.source === "fixture" ? "fixture" : elements.length ? "live" : "idle";
     this.statusNode.dataset.state = state;
     this.statusNode.textContent = state;
     this.metaNode.textContent = [frame.model, frame.latencyMs === undefined ? undefined : `${Math.round(frame.latencyMs)} ms`, frame.skipped ? "cached" : undefined].filter(Boolean).join(" · ");
