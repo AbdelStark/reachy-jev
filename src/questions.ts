@@ -3,6 +3,10 @@ export type ChoiceQuestion = { type: "choice"; instructions: string; options: re
 export type ScoreQuestion = { type: "score"; instructions: string; levels: readonly string[] };
 export type Question = NoulQuestion | ChoiceQuestion | ScoreQuestion;
 export interface QuestionBank { bank: string; version: string; questions: Record<string, Question> }
+export type WireQuestion =
+  | { type: "noul"; instructions: string }
+  | { type: "choice"; instructions: string; criteria: Record<string, null> }
+  | { type: "score"; instructions: string; criteria: readonly [string, string, ...string[]] };
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -42,18 +46,21 @@ export function expandBank(bank: QuestionBank, personIds: readonly string[]): Re
 }
 
 /** Convert the human-readable bank into the TypeSafe JS SDK's actual request shape. */
-export function toTypeSafeQuestions(bank: QuestionBank, personIds: readonly string[]) {
+export function toTypeSafeQuestions(bank: QuestionBank, personIds: readonly string[]): Record<string, WireQuestion> {
   const expanded = expandBank(bank, personIds);
-  return Object.fromEntries(Object.entries(expanded).map(([key, question]) => {
+  const wire: Record<string, WireQuestion> = {};
+  for (const [key, question] of Object.entries(expanded)) {
     const instructions = question.type === "noul" && question.criteria
       ? `${question.instructions} Criteria: ${question.criteria}`
       : question.instructions;
     if (question.type === "choice") {
-      return [key, { type: "choice", instructions, criteria: Object.fromEntries(question.options.map((option) => [option, null])) }];
+      wire[key] = { type: "choice", instructions, criteria: Object.fromEntries(question.options.map((option) => [option, null])) };
+    } else if (question.type === "score") {
+      // expandBank already requires at least two levels; retain that invariant in the type.
+      wire[key] = { type: "score", instructions, criteria: [...question.levels] as [string, string, ...string[]] };
+    } else {
+      wire[key] = { type: "noul", instructions };
     }
-    if (question.type === "score") {
-      return [key, { type: "score", instructions, criteria: [...question.levels] }];
-    }
-    return [key, { type: "noul", instructions }];
-  }));
+  }
+  return wire;
 }

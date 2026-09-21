@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Give the TypeScript TypeSafe-wire projection a discriminated, SDK-compatible return type without changing its JSON payload.
 - Reject malformed or unknown question kinds consistently in TypeScript and Python; add an offline JSON bank-lint command and reviewer checklist.
 - Build the TypeScript distribution during Git dependency installation so a pinned repository commit can be consumed without a sibling checkout.
 - Reject duplicate room person IDs in both language cores and non-finite TypeScript decision bands.

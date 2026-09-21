@@ -24,6 +24,8 @@ Lint a local JSON bank before using it. From this checkout, run `npm run lint:ex
 
 This is structural lint, not a model-quality test. Use the [question-bank review checklist](docs/QUESTION-BANK-CHECKLIST.md) for wording, boundary cases, privacy, and versioning. The Python `expand_bank()` and `to_typesafe_questions()` enforce the same structural rules.
 
+`toTypeSafeQuestions()` returns a discriminated TypeScript wire type, so a validated bank can be passed to a TypeSafe SDK request without an unchecked application-level cast. It still makes no network call; applications own the SDK client, credentials, and response handling.
+
 `JevClient` caches identical state briefly, retries one transient failure, and marks fallback answers stale. Apps must not actuate from stale answers. State omits unknown fields, caps transcript text, and keeps it in a data field.
 
 `traceLine(record)` exports only timing and stale/skip metadata by default (`reachy_jev.trace_meta@1`). It omits app/model labels, state, answers, and action entirely: a short denylist cannot reliably identify private text in arbitrary nested data. `{ keepText: true }` exports the **whole record**, not just selected text fields, and is appropriate only after consent and a caller-owned privacy review. Metadata such as timestamps may still be sensitive; this is not anonymization.
