@@ -4,7 +4,7 @@ export function probability(p: number): number {
   return p;
 }
 export function decide(p: number, band: Band): "no" | "uncertain" | "yes" {
-  if (band.no < 0 || band.no >= band.yes || band.yes > 1) throw new RangeError("invalid band");
+  if (!Number.isFinite(band.no) || !Number.isFinite(band.yes) || band.no < 0 || band.no >= band.yes || band.yes > 1) throw new RangeError("invalid band");
   return probability(p) < band.no ? "no" : p > band.yes ? "yes" : "uncertain";
 }
 export class Hysteresis<T> {

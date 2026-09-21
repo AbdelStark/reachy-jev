@@ -74,10 +74,14 @@ def build_room_state(observation: dict[str, Any]) -> dict[str, Any]:
     person IDs must be session-local p1..p9 identifiers.
     """
     people: list[dict[str, Any]] = []
+    person_ids: set[str] = set()
     for item in observation.get("people") or []:
         person_id = item.get("id")
         if not isinstance(person_id, str) or not _PERSON.fullmatch(person_id):
             raise ValueError("person IDs must be session-local p1..p9 identifiers")
+        if person_id in person_ids:
+            raise ValueError("duplicate person ID")
+        person_ids.add(person_id)
         if item.get("neverSpoke") and item.get("secondsSinceLastSpoke") is not None:
             raise ValueError("neverSpoke conflicts with secondsSinceLastSpoke")
         person: dict[str, Any] = {"id": person_id}

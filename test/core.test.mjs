@@ -18,11 +18,14 @@ test("state bucketing has defined boundaries and omits unknown observations", ()
     { who: "p1", text: "old" }, { who: "p1", text: "middle" }, { who: "p1", text: "new" },
   ] });
   assert.deepEqual(bounded.transcript_recent.map((u) => u.text), ["middle", "new"]);
+  assert.throws(() => buildRoomState({ people: [{ id: "p1" }, { id: "p1" }] }), TypeError);
 });
 
 test("policy primitives gate uncertain answers and throttle repeated actions", () => {
   assert.equal(decide(0.3, { no: 0.3, yes: 0.7 }), "uncertain");
   assert.equal(decide(0.71, { no: 0.3, yes: 0.7 }), "yes");
+  assert.throws(() => decide(0.5, { no: Number.NaN, yes: 0.7 }), RangeError);
+  assert.throws(() => decide(0.5, { no: 0.3, yes: Number.NaN }), RangeError);
   const hysteresis = new Hysteresis(2);
   assert.equal(hysteresis.step("p1"), undefined);
   assert.equal(hysteresis.step("p1"), "p1");

@@ -44,8 +44,11 @@ export function soundLevel(dbfs: number): "silent" | "quiet" | "conversational" 
   return dbfs < -55 ? "silent" : dbfs < -35 ? "quiet" : dbfs < -15 ? "conversational" : "loud";
 }
 export function buildRoomState(input: RoomObservation) {
+  const personIds = new Set<string>();
   const people = (input.people ?? []).map((p) => {
     if (!/^p[1-9]$/.test(p.id)) throw new TypeError("person IDs must be session-local p1..p9 identifiers");
+    if (personIds.has(p.id)) throw new TypeError("duplicate person ID");
+    personIds.add(p.id);
     if (p.neverSpoke && p.secondsSinceLastSpoke !== undefined) throw new TypeError("neverSpoke conflicts with secondsSinceLastSpoke");
     return {
       id: p.id,

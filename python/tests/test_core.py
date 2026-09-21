@@ -98,6 +98,8 @@ def test_room_state_omits_unknown_and_minimizes_transcript():
     )
     with pytest.raises(ValueError):
         build_room_state({"people": [{"id": "other"}]})
+    with pytest.raises(ValueError, match="duplicate person ID"):
+        build_room_state({"people": [{"id": "p1"}, {"id": "p1"}]})
 
 
 def test_question_bank_expansion_and_wire_shape():
