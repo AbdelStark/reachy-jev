@@ -10,12 +10,14 @@ export interface PersonObservation {
   lookingAtRobot?: boolean;
   speaking?: boolean;
   secondsSinceLastSpoke?: number;
+  neverSpoke?: boolean;
+  moving?: "still" | "shifting" | "walking";
 }
 export interface RoomObservation {
   people?: PersonObservation[];
   sound?: { loudestBearingDeg?: number; levelDbfs?: number; voiceDetected?: boolean };
-  transcriptRecent?: { who: string; text: string }[];
-  robot?: { currentlySpeaking?: boolean; lookingAt?: string; secondsSinceOwnLastTurn?: number };
+  transcriptRecent?: { who: string; text: string; endedSecondsAgo?: number }[];
+  robot?: { currentlySpeaking?: boolean; lookingAt?: string; secondsSinceOwnLastTurn?: number; posture?: "idle" | "attending" | "nodding" | "drooping" };
 }
 
 function finite(value: number | undefined): value is number { return value !== undefined && Number.isFinite(value); }
@@ -43,7 +45,8 @@ export function soundLevel(dbfs: number): "silent" | "quiet" | "conversational" 
 }
 export function buildRoomState(input: RoomObservation) {
   const people = (input.people ?? []).map((p) => {
-    if (!/^p[1-9]\d*$/.test(p.id)) throw new TypeError("person IDs must be session-local pN identifiers");
+    if (!/^p[1-9]$/.test(p.id)) throw new TypeError("person IDs must be session-local p1..p9 identifiers");
+    if (p.neverSpoke && p.secondsSinceLastSpoke !== undefined) throw new TypeError("neverSpoke conflicts with secondsSinceLastSpoke");
     return {
       id: p.id,
       ...(finite(p.bearingDeg) ? { bearing: bearing(p.bearingDeg) } : {}),
@@ -51,7 +54,8 @@ export function buildRoomState(input: RoomObservation) {
       ...(finite(p.faceYawDeg) ? { facing_robot: Math.abs(p.faceYawDeg) < 20 } : {}),
       ...(p.lookingAtRobot === undefined ? {} : { looking_at_robot: p.lookingAtRobot }),
       ...(p.speaking === undefined ? {} : { speaking: p.speaking }),
-      ...(finite(p.secondsSinceLastSpoke) ? { seconds_since_last_spoke: elapsed(p.secondsSinceLastSpoke) } : {}),
+      ...(p.neverSpoke ? { seconds_since_last_spoke: "never" } : finite(p.secondsSinceLastSpoke) ? { seconds_since_last_spoke: elapsed(p.secondsSinceLastSpoke) } : {}),
+      ...(p.moving === undefined ? {} : { moving: p.moving }),
     };
   });
   const sound = input.sound && {
@@ -63,11 +67,19 @@ export function buildRoomState(input: RoomObservation) {
     ...(input.robot.currentlySpeaking === undefined ? {} : { currently_speaking: input.robot.currentlySpeaking }),
     ...(input.robot.lookingAt === undefined ? {} : { looking_at: input.robot.lookingAt }),
     ...(finite(input.robot.secondsSinceOwnLastTurn) ? { seconds_since_own_last_turn: elapsed(input.robot.secondsSinceOwnLastTurn) } : {}),
+    ...(input.robot.posture === undefined ? {} : { posture: input.robot.posture }),
   };
+  const latestBySpeaker = new Map<string, number>();
+  const transcript = [...(input.transcriptRecent ?? [])].reverse().filter(({ who }) => who === "unknown" || /^p[1-9]$/.test(who)).filter(({ who }) => {
+    const count = latestBySpeaker.get(who) ?? 0;
+    latestBySpeaker.set(who, count + 1);
+    return count < 2;
+  }).slice(0, 4).reverse().map(({ who, text, endedSecondsAgo }) => ({ who, text: text.slice(0, 200), ...(finite(endedSecondsAgo) ? { ended: elapsed(endedSecondsAgo) } : {}) }));
   return {
+    schema: "room_state@1",
     people,
     ...(sound && Object.keys(sound).length ? { sound } : {}),
-    ...(input.transcriptRecent?.length ? { transcript_recent: input.transcriptRecent.slice(-4).map(({ who, text }) => ({ who, text: text.slice(0, 200) })) } : {}),
+    ...(transcript.length ? { transcript_recent: transcript } : {}),
     ...(robot && Object.keys(robot).length ? { robot } : {}),
   };
 }

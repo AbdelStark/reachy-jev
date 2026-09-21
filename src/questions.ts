@@ -9,7 +9,7 @@ export function expandBank(bank: QuestionBank, personIds: readonly string[]): Re
   if (!/^[a-z][a-z0-9_.-]*$/.test(bank.bank) || !/^\d+\.\d+\.\d+$/.test(bank.version)) throw new TypeError("invalid bank identity");
   if (!Object.keys(bank.questions).length) throw new TypeError("empty question bank");
   const ids = [...new Set(personIds)];
-  if (ids.some((id) => !/^p[1-9]\d*$/.test(id))) throw new TypeError("invalid person ID");
+  if (ids.some((id) => !/^p[1-9]$/.test(id))) throw new TypeError("invalid person ID");
   return Object.fromEntries(Object.entries(bank.questions).map(([key, question]) => {
     if (!/^[a-z][a-z0-9_]*$/.test(key) || !question.instructions.trim()) throw new TypeError("invalid question");
     if (question.type === "choice") {

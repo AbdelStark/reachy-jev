@@ -12,7 +12,12 @@ test("state bucketing has defined boundaries and omits unknown observations", ()
   const state = buildRoomState({ people: [{ id: "p1", bearingDeg: -20 }], transcriptRecent: [{ who: "p1", text: "x".repeat(250) }] });
   assert.deepEqual(state.people, [{ id: "p1", bearing: "slightly left" }]);
   assert.equal(state.transcript_recent[0].text.length, 200);
+  assert.equal(state.schema, "room_state@1");
   assert.equal("sound" in state, false);
+  const bounded = buildRoomState({ transcriptRecent: [
+    { who: "p1", text: "old" }, { who: "p1", text: "middle" }, { who: "p1", text: "new" },
+  ] });
+  assert.deepEqual(bounded.transcript_recent.map((u) => u.text), ["middle", "new"]);
 });
 
 test("policy primitives gate uncertain answers and throttle repeated actions", () => {
