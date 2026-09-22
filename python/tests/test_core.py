@@ -235,6 +235,7 @@ def test_client_cache_retry_and_stale_fallback():
 def test_shared_golden_fixture_matches_typescript_contract():
     fixture = json.loads((Path(__file__).parent / "fixtures" / "parity.json").read_text())
     assert build_room_state(fixture["observation"]) == fixture["state"]
+    assert build_room_state(fixture["unknownObservation"]) == fixture["unknownState"]
     assert to_typesafe_questions(fixture["bank"], ["p1", "p2"]) == fixture["questions"]
     assert attend(-18) == fixture["attend"]
     assert suspicion(0.5) == fixture["suspicion"]

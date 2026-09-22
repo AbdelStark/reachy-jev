@@ -26,7 +26,7 @@ This is structural lint, not a model-quality test. Use the [question-bank review
 
 `toTypeSafeQuestions()` returns a discriminated TypeScript wire type, so a validated bank can be passed to a TypeSafe SDK request without an unchecked application-level cast. It still makes no network call; applications own the SDK client, credentials, and response handling.
 
-`JevClient` caches identical state briefly, retries one transient failure, and marks fallback answers stale. Apps must not actuate from stale answers. State omits unknown fields, caps transcript text, and keeps it in a data field.
+`JevClient` caches identical state briefly, retries one transient failure, and marks fallback answers stale. Apps must not actuate from stale answers. State omits unknown fields (including JSON `null` sensor values), caps transcript text, and keeps it in a data field.
 
 `traceLine(record)` exports only timing and stale/skip metadata by default (`reachy_jev.trace_meta@1`). It omits app/model labels, state, answers, and action entirely: a short denylist cannot reliably identify private text in arbitrary nested data. `{ keepText: true }` exports the **whole record**, not just selected text fields, and is appropriate only after consent and a caller-owned privacy review. Metadata such as timestamps may still be sensitive; this is not anonymization.
 

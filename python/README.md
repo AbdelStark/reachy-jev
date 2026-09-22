@@ -28,6 +28,8 @@ target = attend(-18) if band == "yes" else attend(0)
 
 `JevClient` accepts an async `ask(state, questions)` adapter; it caches identical requests for at most one second and retries one transient failure. If it returns `stale=True`, do not actuate from that answer. `to_typesafe_questions()` emits the TypeSafe SDK's request shape; the bank's fixed instructions are never populated from transcript text. `trace_line()` exports only timing and stale/skip metadata by default (`reachy_jev.trace_meta@1`); it omits app/model labels, state, answers, and action. `keep_text=True` exports the **whole record** and requires consent and caller-owned privacy review. Even timestamps can be sensitive; metadata-only is not anonymization. All functions are unit-tested without keys or hardware.
 
+`build_room_state()` omits unknown sensor values, including JSON `null`, just like the TypeScript core. It does not infer missing observations.
+
 Run the complete [offline example](examples/room_decision.py) with `uv run python examples/room_decision.py`. Its fake answer is a fixture, not a Jev result or robot command.
 
 Development: `uv sync --dev`, `uv run ruff check src tests examples`, `uv run ruff format --check src tests examples`, `uv run pytest`, `uv build` from this directory. See [CHANGELOG.md](CHANGELOG.md), [CITATION.cff](CITATION.cff), [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md).

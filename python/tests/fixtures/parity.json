@@ -18,6 +18,12 @@
     "transcript_recent": [{"who": "p1", "text": "Reachy?", "ended": "just now"}],
     "robot": {"currently_speaking": false}
   },
+  "unknownObservation": {
+    "people": [{"id": "p1", "bearingDeg": null, "faceHeightFraction": null, "faceYawDeg": null, "lookingAtRobot": null, "speaking": null, "secondsSinceLastSpoke": null, "neverSpoke": true, "moving": null}],
+    "sound": {"loudestBearingDeg": null, "levelDbfs": null, "voiceDetected": null},
+    "robot": {"currentlySpeaking": null, "lookingAt": null, "secondsSinceOwnLastTurn": null, "posture": null}
+  },
+  "unknownState": {"schema": "room_state@1", "people": [{"id": "p1", "seconds_since_last_spoke": "never"}]},
   "bank": {
     "bank": "reflex.core",
     "version": "0.1.0",

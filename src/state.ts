@@ -21,6 +21,7 @@ export interface RoomObservation {
 }
 
 function finite(value: number | undefined): value is number { return value !== undefined && Number.isFinite(value); }
+function present<T>(value: T | null | undefined): value is T { return value !== undefined && value !== null; }
 export function bearing(degrees: number): Bearing {
   if (!Number.isFinite(degrees)) throw new RangeError("bearing must be finite");
   if (degrees < -60) return "far left";
@@ -49,28 +50,28 @@ export function buildRoomState(input: RoomObservation) {
     if (!/^p[1-9]$/.test(p.id)) throw new TypeError("person IDs must be session-local p1..p9 identifiers");
     if (personIds.has(p.id)) throw new TypeError("duplicate person ID");
     personIds.add(p.id);
-    if (p.neverSpoke && p.secondsSinceLastSpoke !== undefined) throw new TypeError("neverSpoke conflicts with secondsSinceLastSpoke");
+    if (p.neverSpoke && present(p.secondsSinceLastSpoke)) throw new TypeError("neverSpoke conflicts with secondsSinceLastSpoke");
     return {
       id: p.id,
       ...(finite(p.bearingDeg) ? { bearing: bearing(p.bearingDeg) } : {}),
       ...(finite(p.faceHeightFraction) ? { distance: distance(p.faceHeightFraction) } : {}),
       ...(finite(p.faceYawDeg) ? { facing_robot: Math.abs(p.faceYawDeg) < 20 } : {}),
-      ...(p.lookingAtRobot === undefined ? {} : { looking_at_robot: p.lookingAtRobot }),
-      ...(p.speaking === undefined ? {} : { speaking: p.speaking }),
+      ...(present(p.lookingAtRobot) ? { looking_at_robot: p.lookingAtRobot } : {}),
+      ...(present(p.speaking) ? { speaking: p.speaking } : {}),
       ...(p.neverSpoke ? { seconds_since_last_spoke: "never" } : finite(p.secondsSinceLastSpoke) ? { seconds_since_last_spoke: elapsed(p.secondsSinceLastSpoke) } : {}),
-      ...(p.moving === undefined ? {} : { moving: p.moving }),
+      ...(present(p.moving) ? { moving: p.moving } : {}),
     };
   });
   const sound = input.sound && {
     ...(finite(input.sound.loudestBearingDeg) ? { loudest_bearing: bearing(input.sound.loudestBearingDeg) } : {}),
     ...(finite(input.sound.levelDbfs) ? { level: soundLevel(input.sound.levelDbfs) } : {}),
-    ...(input.sound.voiceDetected === undefined ? {} : { voice_detected: input.sound.voiceDetected }),
+    ...(present(input.sound.voiceDetected) ? { voice_detected: input.sound.voiceDetected } : {}),
   };
   const robot = input.robot && {
-    ...(input.robot.currentlySpeaking === undefined ? {} : { currently_speaking: input.robot.currentlySpeaking }),
-    ...(input.robot.lookingAt === undefined ? {} : { looking_at: input.robot.lookingAt }),
+    ...(present(input.robot.currentlySpeaking) ? { currently_speaking: input.robot.currentlySpeaking } : {}),
+    ...(present(input.robot.lookingAt) ? { looking_at: input.robot.lookingAt } : {}),
     ...(finite(input.robot.secondsSinceOwnLastTurn) ? { seconds_since_own_last_turn: elapsed(input.robot.secondsSinceOwnLastTurn) } : {}),
-    ...(input.robot.posture === undefined ? {} : { posture: input.robot.posture }),
+    ...(present(input.robot.posture) ? { posture: input.robot.posture } : {}),
   };
   const latestBySpeaker = new Map<string, number>();
   const transcript = [...(input.transcriptRecent ?? [])].reverse().filter(({ who }) => who === "unknown" || /^p[1-9]$/.test(who)).filter(({ who }) => {
