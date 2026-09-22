@@ -26,7 +26,7 @@ This is structural lint, not a model-quality test. Use the [question-bank review
 
 `toTypeSafeQuestions()` returns a discriminated TypeScript wire type, so a validated bank can be passed to a TypeSafe SDK request without an unchecked application-level cast. It still makes no network call; applications own the SDK client, credentials, and response handling.
 
-`JevClient` caches identical state briefly, retries one transient failure, and marks fallback answers stale. Apps must not actuate from stale answers. State omits unknown fields (including JSON `null` sensor values), caps transcript text, and keeps it in a data field.
+`JevClient` caches identical state briefly, retries one transient failure, and marks fallback answers stale. Apps must not actuate from stale answers. State omits unknown fields (including JSON `null` sensor values), caps recent transcript text at 200 UTF-16 units without splitting a Unicode scalar, and keeps it in a data field. Lone surrogates in the retained prefix are rejected. This matches the browser relay's text-length boundary in both language cores; it does not sanitize or make consented text safe to share.
 
 `buildRoomState()` accepts only closed, documented labels for movement, posture, booleans, and the robot's `p1`–`p9`/`none` gaze target. Missing or `null` readings are omitted; malformed shapes or out-of-vocabulary labels throw before a model request can be built. This validation does not establish sensor accuracy.
 

@@ -38,6 +38,19 @@ function optionalPersonTarget(value: unknown): string | undefined {
   if (typeof value !== "string" || (value !== "none" && !/^p[1-9]$/.test(value))) throw new TypeError("invalid robot.lookingAt");
   return value;
 }
+function boundedTranscript(value: unknown): string {
+  if (typeof value !== "string") throw new TypeError("transcript text must be string");
+  let text = "";
+  let units = 0;
+  for (const scalar of value) {
+    const codePoint = scalar.codePointAt(0)!;
+    if (codePoint >= 0xd800 && codePoint <= 0xdfff) throw new TypeError("invalid transcript Unicode");
+    if (units + scalar.length > 200) break;
+    text += scalar;
+    units += scalar.length;
+  }
+  return text;
+}
 export function bearing(degrees: number): Bearing {
   if (!Number.isFinite(degrees)) throw new RangeError("bearing must be finite");
   if (degrees < -60) return "far left";
@@ -108,7 +121,7 @@ export function buildRoomState(input: RoomObservation) {
     const count = latestBySpeaker.get(who) ?? 0;
     latestBySpeaker.set(who, count + 1);
     return count < 2;
-  }).slice(0, 4).reverse().map(({ who, text, endedSecondsAgo }) => ({ who, text: text.slice(0, 200), ...(finite(endedSecondsAgo) ? { ended: elapsed(endedSecondsAgo) } : {}) }));
+  }).slice(0, 4).reverse().map(({ who, text, endedSecondsAgo }) => ({ who, text: boundedTranscript(text), ...(finite(endedSecondsAgo) ? { ended: elapsed(endedSecondsAgo) } : {}) }));
   return {
     schema: "room_state@1",
     people,

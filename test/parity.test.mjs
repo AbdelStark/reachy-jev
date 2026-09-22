@@ -10,6 +10,12 @@ test("shared golden fixture matches TypeScript state, wire questions, and abstra
   assert.deepEqual(buildRoomState(fixture.unknownObservation), fixture.unknownState);
   assert.deepEqual(buildRoomState(fixture.controlledObservation), fixture.controlledState);
   assert.deepEqual(buildRoomState(fixture.noneTargetObservation), fixture.noneTargetState);
+  for (const { prefix, count, suffix, expectedSuffix } of fixture.unicodeTruncation) {
+    const text = buildRoomState({ transcriptRecent: [{ who: "p1", text: prefix.repeat(count) + suffix }] }).transcript_recent[0].text;
+    assert.equal(text, prefix.repeat(count) + expectedSuffix);
+    assert.ok(text.length <= 200);
+  }
+  assert.throws(() => buildRoomState({ transcriptRecent: [{ who: "p1", text: "bad\ud800" }] }), TypeError);
   for (const observation of fixture.invalidObservations) assert.throws(() => buildRoomState(observation), TypeError);
   assert.deepEqual(toTypeSafeQuestions(fixture.bank, ["p1", "p2"]), fixture.questions);
   assert.deepEqual(attend(-18), fixture.attend);

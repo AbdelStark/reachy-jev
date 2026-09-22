@@ -29,6 +29,23 @@ def _optional_choice(value: Any, choices: tuple[str, ...], field: str) -> str | 
     return value
 
 
+def _bounded_transcript(value: Any) -> str:
+    if not isinstance(value, str):
+        raise ValueError("transcript text must be string")
+    chars: list[str] = []
+    units = 0
+    for char in value:
+        code_point = ord(char)
+        if 0xD800 <= code_point <= 0xDFFF:
+            raise ValueError("invalid transcript Unicode")
+        width = 2 if code_point > 0xFFFF else 1
+        if units + width > 200:
+            break
+        chars.append(char)
+        units += width
+    return "".join(chars)
+
+
 def bearing(degrees: float) -> str:
     if not _finite(degrees):
         raise ValueError("bearing must be finite")
@@ -154,7 +171,7 @@ def build_room_state(observation: dict[str, Any]) -> dict[str, Any]:
         if counts.get(who, 0) >= 2:
             continue
         counts[who] = counts.get(who, 0) + 1
-        entry: dict[str, Any] = {"who": who, "text": utterance["text"][:200]}
+        entry: dict[str, Any] = {"who": who, "text": _bounded_transcript(utterance["text"])}
         if _finite(utterance.get("endedSecondsAgo")):
             entry["ended"] = elapsed(utterance["endedSecondsAgo"])
         recent.append(entry)

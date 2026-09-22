@@ -238,6 +238,14 @@ def test_shared_golden_fixture_matches_typescript_contract():
     assert build_room_state(fixture["unknownObservation"]) == fixture["unknownState"]
     assert build_room_state(fixture["controlledObservation"]) == fixture["controlledState"]
     assert build_room_state(fixture["noneTargetObservation"]) == fixture["noneTargetState"]
+    for case in fixture["unicodeTruncation"]:
+        text = build_room_state(
+            {"transcriptRecent": [{"who": "p1", "text": case["prefix"] * case["count"] + case["suffix"]}]}
+        )["transcript_recent"][0]["text"]
+        assert text == case["prefix"] * case["count"] + case["expectedSuffix"]
+        assert len(text.encode("utf-16-le")) // 2 <= 200
+    with pytest.raises(ValueError):
+        build_room_state({"transcriptRecent": [{"who": "p1", "text": "bad\ud800"}]})
     for observation in fixture["invalidObservations"]:
         with pytest.raises(ValueError):
             build_room_state(observation)

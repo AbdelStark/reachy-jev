@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Bound recent transcript text to 200 UTF-16 units in both cores without splitting a Unicode scalar; reject lone surrogates in the retained prefix. Shared parity cases cover an emoji on either side of the boundary.
 - Reject malformed room-observation shapes and out-of-vocabulary person, sound, or robot labels in both cores before they can enter model state.
 - Omit JSON `null` sensor values consistently in TypeScript and Python room state; extend the shared parity fixture to cover unknown observations.
 - Give the TypeScript TypeSafe-wire projection a discriminated, SDK-compatible return type without changing its JSON payload.

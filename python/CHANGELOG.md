@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Match the TypeScript core's 200-UTF-16-unit transcript limit without cutting an emoji in half; reject lone surrogates in the retained prefix.
 - Reject duplicate room person IDs.
 - Export only payload-free timing/stale metadata by default; full trace records require explicit `keep_text=True`. This changes the development-preview trace output shape.
 

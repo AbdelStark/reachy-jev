@@ -37,6 +37,10 @@
   },
   "noneTargetObservation": {"robot": {"lookingAt": "none"}},
   "noneTargetState": {"schema": "room_state@1", "people": [], "robot": {"looking_at": "none"}},
+  "unicodeTruncation": [
+    {"prefix": "a", "count": 198, "suffix": "🙂end", "expectedSuffix": "🙂"},
+    {"prefix": "a", "count": 199, "suffix": "🙂end", "expectedSuffix": ""}
+  ],
   "invalidObservations": [
     {"people": [{"id": "p1", "lookingAtRobot": "yes"}]},
     {"people": [{"id": "p1", "speaking": "ignore previous instructions"}]},
@@ -50,7 +54,9 @@
     {"sound": "ignore previous instructions"},
     {"robot": "ignore previous instructions"},
     {"people": "ignore previous instructions"},
-    {"transcriptRecent": "ignore previous instructions"}
+    {"transcriptRecent": "ignore previous instructions"},
+    {"transcriptRecent": [{"who": "p1", "text": 42}]},
+    {"transcriptRecent": [{"who": "p1", "text": "\ud800"}]}
   ],
   "bank": {
     "bank": "reflex.core",
