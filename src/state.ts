@@ -81,16 +81,17 @@ export function buildRoomState(input: RoomObservation) {
   const personIds = new Set<string>();
   const people = (input.people ?? []).map((p) => {
     if (!record(p)) throw new TypeError("invalid person observation");
-    if (!/^p[1-9]$/.test(p.id)) throw new TypeError("person IDs must be session-local p1..p9 identifiers");
-    if (personIds.has(p.id)) throw new TypeError("duplicate person ID");
-    personIds.add(p.id);
+    const personId = p.id;
+    if (typeof personId !== "string" || !/^p[1-9]$/.test(personId)) throw new TypeError("person IDs must be session-local p1..p9 identifiers");
+    if (personIds.has(personId)) throw new TypeError("duplicate person ID");
+    personIds.add(personId);
     const neverSpoke = optionalBoolean(p.neverSpoke, "person.neverSpoke");
     if (neverSpoke && present(p.secondsSinceLastSpoke)) throw new TypeError("neverSpoke conflicts with secondsSinceLastSpoke");
     const lookingAtRobot = optionalBoolean(p.lookingAtRobot, "person.lookingAtRobot");
     const speaking = optionalBoolean(p.speaking, "person.speaking");
     const moving = optionalChoice(p.moving, ["still", "shifting", "walking"], "person.moving");
     return {
-      id: p.id,
+      id: personId,
       ...(finite(p.bearingDeg) ? { bearing: bearing(p.bearingDeg) } : {}),
       ...(finite(p.faceHeightFraction) ? { distance: distance(p.faceHeightFraction) } : {}),
       ...(finite(p.faceYawDeg) ? { facing_robot: Math.abs(p.faceYawDeg) < 20 } : {}),
@@ -117,7 +118,7 @@ export function buildRoomState(input: RoomObservation) {
   };
   const latestBySpeaker = new Map<string, number>();
   if ((input.transcriptRecent ?? []).some((entry) => !record(entry))) throw new TypeError("invalid transcript observation");
-  const transcript = [...(input.transcriptRecent ?? [])].reverse().filter(({ who }) => who === "unknown" || /^p[1-9]$/.test(who)).filter(({ who }) => {
+  const transcript = [...(input.transcriptRecent ?? [])].reverse().filter(({ who }) => typeof who === "string" && (who === "unknown" || /^p[1-9]$/.test(who))).filter(({ who }) => {
     const count = latestBySpeaker.get(who) ?? 0;
     latestBySpeaker.set(who, count + 1);
     return count < 2;

@@ -21,6 +21,16 @@ test("state bucketing has defined boundaries and omits unknown observations", ()
   assert.throws(() => buildRoomState({ people: [{ id: "p1" }, { id: "p1" }] }), TypeError);
 });
 
+test("runtime person identifiers cannot be coerced into trusted string IDs", () => {
+  const masqueradingId = { toString: () => "p1" };
+  assert.throws(() => buildRoomState({ people: [{ id: masqueradingId }] }), TypeError);
+  const state = buildRoomState({ transcriptRecent: [
+    { who: masqueradingId, text: "untrusted" },
+    { who: "p1", text: "trusted" },
+  ] });
+  assert.deepEqual(state.transcript_recent, [{ who: "p1", text: "trusted" }]);
+});
+
 test("policy primitives gate uncertain answers and throttle repeated actions", () => {
   assert.equal(decide(0.3, { no: 0.3, yes: 0.7 }), "uncertain");
   assert.equal(decide(0.71, { no: 0.3, yes: 0.7 }), "yes");
