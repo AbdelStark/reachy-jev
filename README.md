@@ -28,6 +28,8 @@ This is structural lint, not a model-quality test. Use the [question-bank review
 
 `JevClient` caches identical state briefly, retries one transient failure, and marks fallback answers stale. Apps must not actuate from stale answers. State omits unknown fields (including JSON `null` sensor values), caps transcript text, and keeps it in a data field.
 
+`buildRoomState()` accepts only closed, documented labels for movement, posture, booleans, and the robot's `p1`–`p9`/`none` gaze target. Missing or `null` readings are omitted; malformed shapes or out-of-vocabulary labels throw before a model request can be built. This validation does not establish sensor accuracy.
+
 `traceLine(record)` exports only timing and stale/skip metadata by default (`reachy_jev.trace_meta@1`). It omits app/model labels, state, answers, and action entirely: a short denylist cannot reliably identify private text in arbitrary nested data. `{ keepText: true }` exports the **whole record**, not just selected text fields, and is appropriate only after consent and a caller-owned privacy review. Metadata such as timestamps may still be sensitive; this is not anonymization.
 
 ## Browser panel

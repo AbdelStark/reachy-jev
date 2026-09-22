@@ -13,6 +13,22 @@ def _finite(value: Any) -> bool:
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def _optional_bool(value: Any, field: str) -> bool | None:
+    if value is None:
+        return None
+    if not isinstance(value, bool):
+        raise ValueError(f"{field} must be boolean")
+    return value
+
+
+def _optional_choice(value: Any, choices: tuple[str, ...], field: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or value not in choices:
+        raise ValueError(f"invalid {field}")
+    return value
+
+
 def bearing(degrees: float) -> str:
     if not _finite(degrees):
         raise ValueError("bearing must be finite")
@@ -73,16 +89,25 @@ def build_room_state(observation: dict[str, Any]) -> dict[str, Any]:
     Missing or non-finite sensor fields are omitted, never inferred. Caller-supplied
     person IDs must be session-local p1..p9 identifiers.
     """
+    if not isinstance(observation, dict):
+        raise ValueError("invalid room observation shape")
+    for field, kind in (("people", list), ("sound", dict), ("robot", dict), ("transcriptRecent", list)):
+        value = observation.get(field)
+        if value is not None and not isinstance(value, kind):
+            raise ValueError("invalid room observation shape")
     people: list[dict[str, Any]] = []
     person_ids: set[str] = set()
     for item in observation.get("people") or []:
+        if not isinstance(item, dict):
+            raise ValueError("invalid person observation")
         person_id = item.get("id")
         if not isinstance(person_id, str) or not _PERSON.fullmatch(person_id):
             raise ValueError("person IDs must be session-local p1..p9 identifiers")
         if person_id in person_ids:
             raise ValueError("duplicate person ID")
         person_ids.add(person_id)
-        if item.get("neverSpoke") and item.get("secondsSinceLastSpoke") is not None:
+        never_spoke = _optional_bool(item.get("neverSpoke"), "person.neverSpoke")
+        if never_spoke and item.get("secondsSinceLastSpoke") is not None:
             raise ValueError("neverSpoke conflicts with secondsSinceLastSpoke")
         person: dict[str, Any] = {"id": person_id}
         for source, output, convert in (
@@ -94,14 +119,14 @@ def build_room_state(observation: dict[str, Any]) -> dict[str, Any]:
                 person[output] = convert(item[source])
         if _finite(item.get("faceYawDeg")):
             person["facing_robot"] = abs(item["faceYawDeg"]) < 20
-        for source, output in (
-            ("lookingAtRobot", "looking_at_robot"),
-            ("speaking", "speaking"),
-            ("moving", "moving"),
-        ):
-            if item.get(source) is not None:
-                person[output] = item[source]
-        if item.get("neverSpoke"):
+        for source, output in (("lookingAtRobot", "looking_at_robot"), ("speaking", "speaking")):
+            value = _optional_bool(item.get(source), f"person.{source}")
+            if value is not None:
+                person[output] = value
+        moving = _optional_choice(item.get("moving"), ("still", "shifting", "walking"), "person.moving")
+        if moving is not None:
+            person["moving"] = moving
+        if never_spoke:
             person["seconds_since_last_spoke"] = "never"
         people.append(person)
 
@@ -112,14 +137,17 @@ def build_room_state(observation: dict[str, Any]) -> dict[str, Any]:
         sound_state["loudest_bearing"] = bearing(sound["loudestBearingDeg"])
     if _finite(sound.get("levelDbfs")):
         sound_state["level"] = sound_level(sound["levelDbfs"])
-    if sound.get("voiceDetected") is not None:
-        sound_state["voice_detected"] = sound["voiceDetected"]
+    voice_detected = _optional_bool(sound.get("voiceDetected"), "sound.voiceDetected")
+    if voice_detected is not None:
+        sound_state["voice_detected"] = voice_detected
     if sound_state:
         state["sound"] = sound_state
 
     counts: dict[str, int] = {}
     recent: list[dict[str, Any]] = []
     for utterance in reversed(observation.get("transcriptRecent") or []):
+        if not isinstance(utterance, dict):
+            raise ValueError("invalid transcript observation")
         who = utterance.get("who")
         if who != "unknown" and (not isinstance(who, str) or not _PERSON.fullmatch(who)):
             continue
@@ -137,13 +165,19 @@ def build_room_state(observation: dict[str, Any]) -> dict[str, Any]:
 
     robot = observation.get("robot") or {}
     robot_state: dict[str, Any] = {}
-    for source, output in (
-        ("currentlySpeaking", "currently_speaking"),
-        ("lookingAt", "looking_at"),
-        ("posture", "posture"),
-    ):
-        if robot.get(source) is not None:
-            robot_state[output] = robot[source]
+    currently_speaking = _optional_bool(robot.get("currentlySpeaking"), "robot.currentlySpeaking")
+    if currently_speaking is not None:
+        robot_state["currently_speaking"] = currently_speaking
+    looking_at = robot.get("lookingAt")
+    if looking_at is not None:
+        if not isinstance(looking_at, str) or (looking_at != "none" and not _PERSON.fullmatch(looking_at)):
+            raise ValueError("invalid robot.lookingAt")
+        robot_state["looking_at"] = looking_at
+    posture = _optional_choice(
+        robot.get("posture"), ("idle", "attending", "nodding", "drooping"), "robot.posture"
+    )
+    if posture is not None:
+        robot_state["posture"] = posture
     if _finite(robot.get("secondsSinceOwnLastTurn")):
         robot_state["seconds_since_own_last_turn"] = elapsed(robot["secondsSinceOwnLastTurn"])
     if robot_state:

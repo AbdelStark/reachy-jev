@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reject malformed room-observation shapes and out-of-vocabulary person, sound, or robot labels in both cores before they can enter model state.
 - Omit JSON `null` sensor values consistently in TypeScript and Python room state; extend the shared parity fixture to cover unknown observations.
 - Give the TypeScript TypeSafe-wire projection a discriminated, SDK-compatible return type without changing its JSON payload.
 - Reject malformed or unknown question kinds consistently in TypeScript and Python; add an offline JSON bank-lint command and reviewer checklist.
